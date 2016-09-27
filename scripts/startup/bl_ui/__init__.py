@@ -97,8 +97,14 @@ def register():
     bpy.utils.register_module(__name__)
 
     # space_userprefs.py
-    from bpy.props import StringProperty, EnumProperty
+    from bpy.props import StringProperty, EnumProperty, BoolProperty
     from bpy.types import WindowManager
+
+    # show/collapse addon errors in the user preferences
+    WindowManager.addon_show_errors = BoolProperty(
+            default=False,
+            description="Display add-ons errors",
+            )
 
     def addon_filter_items(self, context):
         import addon_utils
@@ -123,6 +129,7 @@ def register():
             description="Search within the selected filter",
             options={'TEXTEDIT_UPDATE'},
             )
+
     WindowManager.addon_filter = EnumProperty(
             items=addon_filter_items,
             name="Category",

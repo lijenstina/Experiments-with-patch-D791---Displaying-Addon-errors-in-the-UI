@@ -209,12 +209,14 @@ class USERPREF_PT_interface(Panel):
         row.separator()
 
         col = row.column()
-        #Toolbox doesn't exist yet
-        #col.label(text="Toolbox:")
-        #col.prop(view, "show_column_layout")
-        #col.label(text="Open Toolbox Delay:")
-        #col.prop(view, "open_left_mouse_delay", text="Hold LMB")
-        #col.prop(view, "open_right_mouse_delay", text="Hold RMB")
+        # Toolbox doesn't exist yet
+        """
+        col.label(text="Toolbox:")
+        col.prop(view, "show_column_layout")
+        col.label(text="Open Toolbox Delay:")
+        col.prop(view, "open_left_mouse_delay", text="Hold LMB")
+        col.prop(view, "open_right_mouse_delay", text="Hold RMB")
+        """
         col.prop(view, "show_manipulator")
         sub = col.column()
         sub.active = view.show_manipulator
@@ -332,7 +334,7 @@ class USERPREF_PT_edit(Panel):
 
         sub = col.column()
 
-        #~ sub.active = edit.use_keyframe_insert_auto # incorrect, time-line can enable
+        # sub.active = edit.use_keyframe_insert_auto # incorrect, time-line can enable
         sub.prop(edit, "use_keyframe_insert_available", text="Only Insert Available")
 
         col.separator()
@@ -369,7 +371,7 @@ class USERPREF_PT_edit(Panel):
         col.prop(edit, "use_duplicate_lamp", text="Lamp")
         col.prop(edit, "use_duplicate_material", text="Material")
         col.prop(edit, "use_duplicate_texture", text="Texture")
-        #col.prop(edit, "use_duplicate_fcurve", text="F-Curve")
+        # col.prop(edit, "use_duplicate_fcurve", text="F-Curve")
         col.prop(edit, "use_duplicate_action", text="Action")
         col.prop(edit, "use_duplicate_particle", text="Particle")
 
@@ -415,7 +417,7 @@ class USERPREF_PT_system(Panel):
         col.row().prop(system, "audio_device", expand=False)
         sub = col.column()
         sub.active = system.audio_device != 'NONE' and system.audio_device != 'Null'
-        #sub.prop(system, "use_preview_images")
+        # sub.prop(system, "use_preview_images")
         sub.prop(system, "audio_channels", text="Channels")
         sub.prop(system, "audio_mixing_buffer", text="Mixing Buffer")
         sub.prop(system, "audio_sample_rate", text="Sample Rate")
@@ -1143,13 +1145,13 @@ class USERPREF_PT_input(Panel):
             sub.row().prop(inputs, "view_zoom_axis", expand=True)
             sub.prop(inputs, "invert_mouse_zoom", text="Invert Mouse Zoom Direction")
 
-        #sub.prop(inputs, "use_mouse_mmb_paste")
+        # sub.prop(inputs, "use_mouse_mmb_paste")
 
-        #col.separator()
+        # col.separator()
 
         sub = col.column()
         sub.prop(inputs, "invert_zoom_wheel", text="Invert Wheel Zoom Direction")
-        #sub.prop(view, "wheel_scroll_lines", text="Scroll Lines")
+        # sub.prop(view, "wheel_scroll_lines", text="Scroll Lines")
 
         if sys.platform == "darwin":
             sub = col.column()
@@ -1195,9 +1197,9 @@ class USERPREF_PT_input(Panel):
 
         layout = self.layout
 
-        #import time
+        # import time
 
-        #start = time.time()
+        # start = time.time()
 
         userpref = context.user_preferences
 
@@ -1211,7 +1213,7 @@ class USERPREF_PT_input(Panel):
         # Keymap Settings
         draw_keymaps(context, split)
 
-        #print("runtime", time.time() - start)
+        # print("runtime", time.time() - start)
 
 
 class USERPREF_MT_addons_online_resources(Menu):
@@ -1311,11 +1313,27 @@ class USERPREF_PT_addons(Panel):
 
         # set in addon_utils.modules_refresh()
         if addon_utils.error_duplicates:
-            self.draw_error(col,
-                            "Multiple addons using the same name found!\n"
-                            "likely a problem with the script search path.\n"
-                            "(see console for details)",
-                            )
+            # list the duplicate addons in the UI
+            box = col.box()
+            row = box.row()
+            row.label("Multiple addons with the same name found!")
+            row.label(icon='ERROR')
+            box.separator()
+
+            # expand/collapse the list
+            box.prop(context.window_manager, "addon_show_errors", text="Show duplicates", icon='INFO')
+            if context.window_manager.addon_show_errors:
+                for i, addon in enumerate(addon_utils.error_duplicates):
+                    box.label(addon[0].bl_info['name'] + ":")
+                    boxy = box.box()
+                    row = boxy.row()
+                    row.label("    " + addon[1])
+
+                    row = boxy.row()
+                    row.label("    " + addon[2])
+
+                    if i < len(addon_utils.error_duplicates) - 1:
+                        box.separator()
 
         if addon_utils.error_encoding:
             self.draw_error(col,
@@ -1344,7 +1362,7 @@ class USERPREF_PT_addons(Panel):
                 (filter == "Enabled" and is_enabled) or
                 (filter == "Disabled" and not is_enabled) or
                 (filter == "User" and (mod.__file__.startswith((scripts_addons_folder, userpref_addons_folder))))
-                ):
+                 ):
 
                 if search and search not in info["name"].lower():
                     if info["author"]:

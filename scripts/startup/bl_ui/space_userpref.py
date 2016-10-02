@@ -210,13 +210,12 @@ class USERPREF_PT_interface(Panel):
 
         col = row.column()
         # Toolbox doesn't exist yet
-        """
-        col.label(text="Toolbox:")
-        col.prop(view, "show_column_layout")
-        col.label(text="Open Toolbox Delay:")
-        col.prop(view, "open_left_mouse_delay", text="Hold LMB")
-        col.prop(view, "open_right_mouse_delay", text="Hold RMB")
-        """
+        # col.label(text="Toolbox:")
+        # col.prop(view, "show_column_layout")
+        # col.label(text="Open Toolbox Delay:")
+        # col.prop(view, "open_left_mouse_delay", text="Hold LMB")
+        # col.prop(view, "open_right_mouse_delay", text="Hold RMB")
+
         col.prop(view, "show_manipulator")
         sub = col.column()
         sub.active = view.show_manipulator
@@ -1316,24 +1315,21 @@ class USERPREF_PT_addons(Panel):
             # list the duplicate addons in the UI
             box = col.box()
             row = box.row()
-            row.label("Multiple addons with the same name found!")
+            row.label("Multiple addons with the same file / folder name found!")
             row.label(icon='ERROR')
             box.separator()
 
-            # expand/collapse the list
+            # expand/collapse
             box.prop(context.window_manager, "addon_show_errors", text="Show duplicates", icon='INFO')
+
             if context.window_manager.addon_show_errors:
-                for i, addon in enumerate(addon_utils.error_duplicates):
-                    box.label(addon[0].bl_info['name'] + ":")
-                    boxy = box.box()
-                    row = boxy.row()
-                    row.label("    " + addon[1])
-
-                    row = boxy.row()
-                    row.label("    " + addon[2])
-
-                    if i < len(addon_utils.error_duplicates) - 1:
-                        box.separator()
+                for addon in addon_utils.error_duplicates:
+                    box_a = box.box()
+                    box_a.label("%s" % (addon))
+                    for i, files in enumerate(addon_utils.error_duplicates[addon]):
+                        box_b = box_a.box()
+                        row = box_b.row()
+                        row.label("(%r)    %r" % (i + 1, files), icon='FILE_SCRIPT')
 
         if addon_utils.error_encoding:
             self.draw_error(col,

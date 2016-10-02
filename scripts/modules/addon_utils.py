@@ -31,8 +31,8 @@ __all__ = (
 import bpy as _bpy
 _user_preferences = _bpy.context.user_preferences
 
-# collect duplicate addons to display in user preferences
-error_duplicates = []
+# collect duplicate addons for displaying in user preferences
+error_duplicates = {}
 
 error_encoding = False
 addons_fake_modules = {}
@@ -63,7 +63,7 @@ def modules_refresh(module_cache=addons_fake_modules):
     global error_encoding
     import os
 
-    error_duplicates = []
+    error_duplicates = {}
     error_encoding = False
 
     path_list = paths()
@@ -166,12 +166,19 @@ def modules_refresh(module_cache=addons_fake_modules):
         for mod_name, mod_path in _bpy.path.module_names(path):
             modules_stale.discard(mod_name)
             mod = module_cache.get(mod_name)
+
             if mod:
                 if mod.__file__ != mod_path:
-                    print("multiple addons with the same name:\n  %r\n  %r" %
-                          (mod.__file__, mod_path))
-                    # used in space_userpref.py
-                    error_duplicates.append([mod, mod.__file__, mod_path])
+                    temp_mod_name = mod.bl_info['name'] if mod.bl_info['name'] else "Nameless add-on"
+
+                    if temp_mod_name not in error_duplicates:
+                        error_duplicates[temp_mod_name] = [mod.__file__, mod_path]
+                    else:
+                        if mod.__file__ not in error_duplicates[temp_mod_name]:
+                            error_duplicates[temp_mod_name].append(mod.__file__)
+
+                        if mod_path not in error_duplicates[temp_mod_name]:
+                            error_duplicates[temp_mod_name].append(mod_path)
 
                 elif mod.__time__ != os.path.getmtime(mod_path):
                     print("reloading addon:",
@@ -189,6 +196,14 @@ def modules_refresh(module_cache=addons_fake_modules):
                                   force_support=force_support)
                 if mod:
                     module_cache[mod_name] = mod
+
+    # moved here so it doesn't repeat printing the same module entries
+    if error_duplicates:
+        print("\nmultiple addons with the same file / folder name: \n")
+        for duplicates in error_duplicates:
+            print("\n[%s]" %(duplicates))
+            for i, files in enumerate(error_duplicates[duplicates]):
+                print("\n({}) {}".format(i + 1, files))
 
     # just in case we get stale modules, not likely
     for mod_stale in modules_stale:

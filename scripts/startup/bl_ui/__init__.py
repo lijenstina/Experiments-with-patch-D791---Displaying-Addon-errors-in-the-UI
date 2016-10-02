@@ -100,12 +100,6 @@ def register():
     from bpy.props import StringProperty, EnumProperty, BoolProperty
     from bpy.types import WindowManager
 
-    # show/collapse addon errors in the user preferences
-    WindowManager.addon_show_errors = BoolProperty(
-            default=False,
-            description="Display add-ons errors",
-            )
-
     def addon_filter_items(self, context):
         import addon_utils
 
@@ -145,6 +139,12 @@ def register():
             description="Display support level",
             default={'OFFICIAL', 'COMMUNITY'},
             options={'ENUM_FLAG'},
+            )
+
+    # show/collapse addon errors in the user preferences
+    WindowManager.addon_show_errors = BoolProperty(
+            default=False,
+            description="Display add-ons errors",
             )
     # done...
 

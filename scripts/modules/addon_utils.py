@@ -62,8 +62,9 @@ def modules_refresh(module_cache=addons_fake_modules):
     global error_duplicates
     global error_encoding
     import os
+    from collections import defaultdict
 
-    error_duplicates = {}
+    error_duplicates = defaultdict(list)
     error_encoding = False
 
     path_list = paths()
@@ -171,14 +172,12 @@ def modules_refresh(module_cache=addons_fake_modules):
                 if mod.__file__ != mod_path:
                     temp_mod_name = mod.bl_info['name'] if mod.bl_info['name'] else "Nameless add-on"
 
-                    if temp_mod_name not in error_duplicates:
-                        error_duplicates[temp_mod_name] = [mod.__file__, mod_path]
-                    else:
-                        if mod.__file__ not in error_duplicates[temp_mod_name]:
-                            error_duplicates[temp_mod_name].append(mod.__file__)
+                    # is there is a better way to check this?
+                    if mod.__file__ not in error_duplicates[temp_mod_name]:
+                        error_duplicates[temp_mod_name].append(mod.__file__)
 
-                        if mod_path not in error_duplicates[temp_mod_name]:
-                            error_duplicates[temp_mod_name].append(mod_path)
+                    if mod_path not in error_duplicates[temp_mod_name]:
+                        error_duplicates[temp_mod_name].append(mod_path)
 
                 elif mod.__time__ != os.path.getmtime(mod_path):
                     print("reloading addon:",
@@ -201,7 +200,7 @@ def modules_refresh(module_cache=addons_fake_modules):
     if error_duplicates:
         print("\nmultiple addons with the same file / folder name: \n")
         for duplicates in error_duplicates:
-            print("\n[%s]" %(duplicates))
+            print("\n[%s]" % (duplicates))
             for i, files in enumerate(error_duplicates[duplicates]):
                 print("\n({}) {}".format(i + 1, files))
 

@@ -64,7 +64,7 @@ def modules_refresh(module_cache=addons_fake_modules):
     import os
     from collections import defaultdict
 
-    error_duplicates = defaultdict(list)
+    error_duplicates = defaultdict(set)
     error_encoding = False
 
     path_list = paths()
@@ -171,13 +171,8 @@ def modules_refresh(module_cache=addons_fake_modules):
             if mod:
                 if mod.__file__ != mod_path:
                     temp_mod_name = mod.bl_info['name'] if mod.bl_info['name'] else "Nameless add-on"
-
-                    # is there is a better way to check this?
-                    if mod.__file__ not in error_duplicates[temp_mod_name]:
-                        error_duplicates[temp_mod_name].append(mod.__file__)
-
-                    if mod_path not in error_duplicates[temp_mod_name]:
-                        error_duplicates[temp_mod_name].append(mod_path)
+                    error_duplicates[temp_mod_name].add(mod.__file__)
+                    error_duplicates[temp_mod_name].add(mod_path)
 
                 elif mod.__time__ != os.path.getmtime(mod_path):
                     print("reloading addon:",

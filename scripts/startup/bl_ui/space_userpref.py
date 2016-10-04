@@ -1329,7 +1329,7 @@ class USERPREF_PT_addons(Panel):
                     for i, files in enumerate(addon_utils.error_duplicates[addon]):
                         box_b = box_a.box()
                         row = box_b.row()
-                        row.label("(%r)    %r" % (i + 1, files), icon='FILE_SCRIPT')
+                        row.label("(%s)    %s" % (i + 1, files), icon='FILE_SCRIPT')
 
         if addon_utils.error_encoding:
             self.draw_error(col,

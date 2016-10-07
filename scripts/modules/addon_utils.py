@@ -31,10 +31,10 @@ __all__ = (
 import bpy as _bpy
 _user_preferences = _bpy.context.user_preferences
 
-# collect duplicate addons for displaying in user preferences
+# collect duplicates and UTF-8 errors to display in user preferences UI
 error_duplicates = {}
+error_encoding = {}
 
-error_encoding = False
 addons_fake_modules = {}
 
 
@@ -65,7 +65,7 @@ def modules_refresh(module_cache=addons_fake_modules):
     from collections import defaultdict
 
     error_duplicates = defaultdict(set)
-    error_encoding = False
+    error_encoding = defaultdict(set)
 
     path_list = paths()
 
@@ -92,9 +92,7 @@ def modules_refresh(module_cache=addons_fake_modules):
                     try:
                         l = line_iter.readline()
                     except UnicodeDecodeError as e:
-                        if not error_encoding:
-                            error_encoding = True
-                            print("Error reading file as UTF-8:", mod_path, e)
+                        error_encoding[mod_path].add(e)
                         return None
 
                     if len(l) == 0:
@@ -104,9 +102,7 @@ def modules_refresh(module_cache=addons_fake_modules):
                     try:
                         l = line_iter.readline()
                     except UnicodeDecodeError as e:
-                        if not error_encoding:
-                            error_encoding = True
-                            print("Error reading file as UTF-8:", mod_path, e)
+                        error_encoding[mod_path].add(e)
                         return None
 
                 data = "".join(lines)
@@ -191,13 +187,20 @@ def modules_refresh(module_cache=addons_fake_modules):
                 if mod:
                     module_cache[mod_name] = mod
 
-    # moved here so it doesn't repeat printing the same module entries
+    # moved console print here so has cleaner output
     if error_duplicates:
-        print("\nmultiple addons with the same file / folder name: \n")
+        print("\n\nMultiple addons with the same file / folder name:")
         for duplicates in error_duplicates:
             print("\n[%s]" % (duplicates))
             for i, files in enumerate(error_duplicates[duplicates]):
                 print("\n({}) {}".format(i + 1, files))
+
+    if error_encoding:
+        print("\n\nError reading files as UTF-8:")
+        for files in error_encoding:
+            print("\n File: (%s)" % (files))
+            for i, errors in enumerate(error_encoding[files]):
+                print("\n [Encoding Error] {}".format(errors))
 
     # just in case we get stale modules, not likely
     for mod_stale in modules_stale:

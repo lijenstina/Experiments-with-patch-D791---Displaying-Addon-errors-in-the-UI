@@ -97,7 +97,7 @@ def register():
     bpy.utils.register_module(__name__)
 
     # space_userprefs.py
-    from bpy.props import StringProperty, EnumProperty, BoolProperty
+    from bpy.props import StringProperty, EnumProperty, BoolVectorProperty
     from bpy.types import WindowManager
 
     def addon_filter_items(self, context):
@@ -141,10 +141,10 @@ def register():
             options={'ENUM_FLAG'},
             )
 
-    # show/collapse addon errors in the user preferences
-    WindowManager.addon_show_errors = BoolProperty(
-            default=False,
+    WindowManager.addon_show_errors = BoolVectorProperty(
             description="Display add-ons errors",
+            default=(False, False),
+            size=2,
             )
     # done...
 

@@ -1273,16 +1273,6 @@ class USERPREF_PT_addons(Panel):
                 return True
         return False
 
-    @staticmethod
-    def draw_error(layout, message):
-        lines = message.split("\n")
-        box = layout.box()
-        sub = box.row()
-        sub.label(lines[0])
-        sub.label(icon='ERROR')
-        for l in lines[1:]:
-            box.label(l)
-
     def draw(self, context):
         import os
         import addon_utils
@@ -1311,31 +1301,51 @@ class USERPREF_PT_addons(Panel):
         col = split.column()
 
         # set in addon_utils.modules_refresh()
-        if addon_utils.error_duplicates:
-            # list the duplicate addons in the UI
+        if addon_utils.error_duplicates or addon_utils.error_encoding:
+            # list the addon errors in the UI
             box = col.box()
             row = box.row()
-            row.label("Multiple addons with the same file / folder name found!")
+
+            row.label("Add-on errors found!")
             row.label(icon='ERROR')
-            box.separator()
 
-            # expand/collapse
-            box.prop(context.window_manager, "addon_show_errors", text="Show duplicates", icon='INFO')
+            if addon_utils.error_duplicates:
+                box_dupli = box.box()
+                row_dupli = box_dupli.row()
+                row_dupli.label(icon='INFO')
+                row_dupli_split = row_dupli.split(0.85)
+                row_dupli_split.label("Multiple addons with the same file / folder name")
+                # expand/collapse errors
+                row_dupli_split.prop(context.window_manager, "addon_show_errors", index=0,
+                         text="Show / Hide", toggle=True)
 
-            if context.window_manager.addon_show_errors:
-                for addon in addon_utils.error_duplicates:
-                    box_a = box.box()
-                    box_a.label("%s" % (addon))
-                    for i, files in enumerate(addon_utils.error_duplicates[addon]):
-                        box_b = box_a.box()
-                        row = box_b.row()
-                        row.label("(%s)    %s" % (i + 1, files), icon='FILE_SCRIPT')
+                if context.window_manager.addon_show_errors[0]:
+                    for addon in addon_utils.error_duplicates:
+                        box_a = box_dupli.box()
+                        box_a.label("%s" % (addon))
+                        for i, files in enumerate(addon_utils.error_duplicates[addon]):
+                            box_b = box_a.box()
+                            row = box_b.row()
+                            row.label("(%s)    %s" % (i + 1, files), icon='FILE_SCRIPT')
+                    box.separator()
 
-        if addon_utils.error_encoding:
-            self.draw_error(col,
-                            "One or more addons do not have UTF-8 encoding\n"
-                            "(see console for details)",
-                            )
+            if addon_utils.error_encoding:
+                box_encode = box.box()
+                row_encode = box_encode.row()
+                row_encode.label(icon='INFO')
+                row_encode_split = row_encode.split(0.85)
+                row_encode_split.label("One or more addons do not have UTF-8 encoding")
+                # expand/collapse errors
+                row_encode_split.prop(context.window_manager, "addon_show_errors", index=1,
+                         text="Show / Hide", toggle=True)
+
+                if context.window_manager.addon_show_errors[1]:
+                    for paths in addon_utils.error_encoding:
+                        box_c = box_encode.box()
+                        box_c.label("%s" % (paths), icon='FILE_SCRIPT')
+                    box.separator()
+
+            col.separator()
 
         filter = context.window_manager.addon_filter
         search = context.window_manager.addon_search.lower()
